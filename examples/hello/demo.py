@@ -4,7 +4,7 @@ from pathlib import Path
 
 TITLE = "Hello, demo pipeline"
 DESKTOP_LABEL = "Demo desktop"
-OUT = Path.home() / "Movies/demo-video/hello"          # takes land in OUT/<take>/
+OUT = Path("../../exports/hello")                      # takes land in OUT/<take>/, gitignored
 PROFILES = Path.home() / ".cache/demo-video/hello/profiles"  # this demo's own browser profiles
 TMUX = "hellodemo"                                     # the terminal stream's tmux session
 

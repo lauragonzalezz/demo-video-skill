@@ -34,7 +34,7 @@ Unchanged except where noted. These carry her copyright.
 | `scripts/term_mirror.py`, `scripts/stage.sh` | Unchanged |
 | `scripts/tts.py`, `scripts/kokoro_lines.py`, `scripts/elevenlabs.py`, `scripts/voices.py` | Unchanged |
 | `scripts/doctor.sh` | Extended with simulator and Pillow checks; her checks kept |
-| `examples/hello/` | Unchanged — still the web-path smoke test |
+| `examples/hello/` | Still the web-path smoke test. One change: `OUT` (and `run.sh`'s final path) point at the repo's gitignored `exports/`, not `~/Movies`, so all generated media lands in one place |
 | `tests/test_*.py` | Her suite, unchanged |
 | `troubleshooting.md`, `voiceover-and-imovie.md` | Unchanged |
 | `SKILL.md` | Extended with the simulator backend; her web/terminal steps kept |
