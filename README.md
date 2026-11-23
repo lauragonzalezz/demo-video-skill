@@ -45,7 +45,7 @@ Then, for whichever path you're on:
 | Path | Also needs |
 |---|---|
 | **Phone** | Xcode, and a booted simulator (`xcrun simctl boot 'iPhone 17 Pro Max'`). Pillow, which uv fetches per run. Only a scene that taps *by itself* needs a UI driver: `brew install idb-companion && pipx install fb-idb` |
-| **Web/terminal** | tmux, Playwright's Chromium, and ffmpeg **with `drawtext`** — Homebrew's plain `ffmpeg` is built without freetype, so use `brew install homebrew-ffmpeg/ffmpeg/ffmpeg` (a source build) and put it first on `PATH` |
+| **Web/terminal** | tmux, Playwright's Chromium, and ffmpeg **with `drawtext`** — Homebrew's plain `ffmpeg` is built without freetype, so `brew install ffmpeg-full` and put `$(brew --prefix ffmpeg-full)/bin` first on `PATH`. It is bottled and keg-only, so it sits beside your ffmpeg rather than replacing it |
 
 The phone path deliberately avoids `drawtext`: it draws its title cards with Pillow, so you
 don't need a source build of ffmpeg to make a phone demo.

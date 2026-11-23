@@ -36,7 +36,10 @@ if [ $web = 1 ]; then
     # Homebrew's plain ffmpeg formula is built without freetype, so reinstalling it can't help.
     # Only the desktop renderer needs drawtext; the portrait one draws its text with Pillow.
     echo "MISSING ffmpeg drawtext filter (the web path's title card and +N s tags) ->"
-    echo "        brew install homebrew-ffmpeg/ffmpeg/ffmpeg   # builds from source, takes a while"
+    echo "        brew install ffmpeg-full"
+    echo "        export PATH=\"\$(brew --prefix ffmpeg-full)/bin:\$PATH\""
+    echo "        (ffmpeg-full is bottled and keg-only: it installs beside your ffmpeg"
+    echo "         rather than replacing it, so only PATH decides which one runs.)"
     fail=1
   fi
   if command -v uv >/dev/null && ! uv run -q --no-project --with playwright python -c \
