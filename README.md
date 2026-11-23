@@ -119,11 +119,19 @@ The narration engine is chosen by the *shape of the voice's name*: `af_heart` is
 Mac), anything else is a macOS `say` voice. A key alone never turns ElevenLabs on — you have
 to name the voice.
 
+Everything here runs through [uv](https://docs.astral.sh/uv/), which builds a throwaway
+environment per run — so none of it installs into your system Python or touches any other
+project's dependencies. macOS has no bare `python`, so the full command is:
+
 ```bash
-python scripts/kokoro_catalog.py          # the local voices worth considering, graded
-python scripts/voice_lab.py --serve       # hear them all, English and Spanish, offline
-python scripts/fit_portrait.py <demo>     # does the picture outlast each line?
+cd ~/DEV/demo-video-skill
+uv run -q --no-project python scripts/kokoro_catalog.py      # the local voices, graded
+uv run -q --no-project python scripts/voice_lab.py --serve   # hear them all, offline
+uv run -q --no-project python scripts/fit_portrait.py <demo> # does the picture outlast each line?
 ```
+
+The lab serves on <http://127.0.0.1:8787/>; Ctrl-C stops it. The first run voices every
+sample (a minute or so), after which they are cached and it starts instantly.
 
 The voice lab exists because Kokoro's official demo space is English-only, so its Spanish
 voices can't be auditioned anywhere else. ElevenLabs setup is in
