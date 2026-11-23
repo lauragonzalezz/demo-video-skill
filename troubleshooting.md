@@ -56,3 +56,20 @@ Each row was hit for real while making a 5-minute product demo with this pipelin
 | An ElevenLabs voice says a word wrongly | the inline IPA varies by voice and phrase | audition with `voices.py say`; respell the word in the line (`trapezIi`) if IPA won't land |
 | `voices.py quota` doesn't move after voicing | the counter lags | `/v1/history` is the live record |
 | The full video is too big to send in chat (30 MB cap) | 1080p crf 18 | send `-preview.mp4` (crf 26, ~18 MB for 5 min) |
+
+## The iOS simulator path
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `no simulator is booted` | nothing is running | `xcrun simctl boot 'iPhone 17 Pro Max'`; `sim_recorder.py devices` lists them. In Xcode 26+ the window is **Device Hub**, not Simulator.app — but nothing here needs it open |
+| `N simulators are booted; set DEVICE in demo.py` | more than one is running, so "booted" is ambiguous | name one in `demo.py` (`DEVICE = "iPhone 17 Pro Max"`, or a udid), or shut the others down |
+| `the simulator never started recording` | the device is booting, or its display is asleep | wait for `simctl bootstatus` to return, then re-run; check `simctl io <udid> enumerate` lists a display |
+| The take's video is far shorter than the take | `simctl` writes a frame only when the screen changes, so a still app records almost nothing (measured: 6 s of a static screen → 1 frame in a 0.07 s file) | nothing to do — `sim_recorder.normalise` rebuilds the capture at a constant frame rate with the last frame held, to the take's own length. If you see this on the *raw* `.src.mov`, that's expected |
+| `phone.mp4 normalised to X s, expected Y s` | the rebuild came out short, so the timeline wouldn't line up | the take is refused rather than rendered wrong; re-record it. Check free disk space and that ffmpeg isn't being killed |
+| A clip shows the wrong moment | the take clock and the video drifted | the clock starts at simctl's `Recording started` line; don't change `_start_recording` to start it earlier |
+| The phone is stretched or has black bars | a `FORMAT` whose shape isn't the footage's | `FORMAT = "portrait"` takes the footage's own aspect (full bleed). `reels`/`square` are fixed targets and pad to fit — by design, never stretching |
+| `this take has no UI driver, so it cannot tap` | a scripted scene called `t.tap...` with `DRIVER = "manual"` | drive it yourself with `sim_recorder.py session`, or `DRIVER = "idb"` plus `brew install idb-companion && pipx install fb-idb` |
+| `nothing on screen is labelled 'Save'` | the accessibility label differs from the visible text | the error lists what *is* on screen; use one of those, or add an `accessibilityLabel` in the app |
+| A deep link "succeeds" but nothing moves | iOS 26+ restricts `App-prefs:` links; they only foreground Settings | drive the UI instead (a driver or the session route), or use your own app's scheme |
+| The title card won't render | Pillow isn't in the environment | run with `uv run --no-project --with pillow python ...`, or set `TITLE = ""` to skip the card |
+| The status bar shows a real clock, or "◀ Safari" | the override was cleared, or the app was foregrounded from elsewhere | the recorder pins 9:41 for the take and clears it after; `t.launch(bundle_id)` relaunches cleanly, which drops the back-chip |

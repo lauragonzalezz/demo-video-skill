@@ -1,73 +1,73 @@
 # demo-video
 
-A Claude Code skill for making narrated product demo videos **without screen capture**.
+A Claude Code skill for making narrated product demo videos **without screen capture** —
+including a **native iOS app on the simulator**.
 
-Playwright records each window (a terminal, a web app, a chat app) headless, as its own
-stream on one clock. Only the stretches you mark are kept, so a 10-minute wait becomes a
-"+10 min" cut. The windows are laid out on one desktop, a placeholder narration is voiced
-with [Kokoro-82M](https://github.com/hexgrad/kokoro) (an open-weight voice that runs on your
-Mac, so the script stays on it unless you pick an ElevenLabs voice), and you get a time-stamped script. A person then reads that script as the
-real voice-over and finishes the edit in iMovie. Or name an [ElevenLabs](https://elevenlabs.io)
-voice for a finished read, which sends the script to ElevenLabs (a saved voice does this for every later demo), and use `--fit` so the picture
-doesn't play on in silence after a line ends.
+Two ways to record, one pipeline:
 
-It works with the Mac's screen locked, and re-recording one scene doesn't touch the others.
+- **A phone demo.** `simctl` records the simulator's screen, so you get the phone's own
+  picture: portrait, full bleed, no window chrome and no device bezel. You mark what the
+  viewer should see; everything else — setup taps, loaders, the wait for a sync — is cut.
+- **A web or terminal demo.** Playwright records each window (a terminal, a web app, a chat
+  app) headless, as its own stream on one clock, and lays them out as windows on one
+  desktop. Works with the Mac's screen locked.
+
+Either way the narration is voiced with [Kokoro-82M](https://github.com/hexgrad/kokoro) (an
+open-weight voice that runs on your Mac, so your script stays on it), and you get a
+time-stamped script. A person can then read that script as the real voice-over and finish in
+iMovie — or you name an [ElevenLabs](https://elevenlabs.io) voice for a finished read, which
+sends the script to ElevenLabs. Re-recording one scene doesn't touch the others.
+
+> **Credit.** This is built on **[trianglegrrl/demo-video-skill](https://github.com/trianglegrrl/demo-video-skill)**
+> by Alaina Hardie (MIT), used and extended with her blessing. Her recorder, clip model,
+> narration stack and desktop renderer are the foundation; the simulator backend and the
+> portrait renderer are what this repository adds. See [ATTRIBUTION.md](ATTRIBUTION.md) for
+> the file-by-file split and her base commit.
 
 ## Install
 
 ```bash
-gh repo clone trianglegrrl/demo-video-skill ~/.claude/skills/demo-video
+git clone https://github.com/lauragonzalezz/demo-video-skill ~/DEV/demo-video-skill
+ln -s ~/DEV/demo-video-skill ~/.claude/skills/demo-video
 ```
 
-Then ask Claude Code for a demo video; the skill loads itself. `SKILL.md` is what Claude
-reads; this README is for people.
+The symlink means one source of truth: edits to the repo are live in the skill immediately.
+(Cloning straight into `~/.claude/skills/demo-video` works too.) Then ask Claude Code for a
+demo video; the skill loads itself. `SKILL.md` is what Claude reads; this README is for
+people.
 
 ## Requirements
 
-macOS (for iMovie), [uv](https://docs.astral.sh/uv/), ffmpeg with `drawtext`, and tmux.
-Homebrew's plain `ffmpeg` no longer has `drawtext`: use `brew install ffmpeg-full` and put
-`$(brew --prefix ffmpeg-full)/bin` first on your `PATH`. Kokoro needs Python 3.10 to 3.12, which
-uv fetches on its own; its first run downloads the model (about 330 MB). Any macOS `say` voice
-still works if you pass its name instead. ElevenLabs is optional and needs a key (see below).
-Check them:
+macOS, [uv](https://docs.astral.sh/uv/) and ffmpeg (`brew install ffmpeg`). Kokoro needs
+Python 3.10–3.12, which uv fetches on its own; its first run downloads the model (~330 MB).
+Then, for whichever path you're on:
+
+| Path | Also needs |
+|---|---|
+| **Phone** | Xcode, and a booted simulator (`xcrun simctl boot 'iPhone 17 Pro Max'`). Pillow, which uv fetches per run. Only a scene that taps *by itself* needs a UI driver: `brew install idb-companion && pipx install fb-idb` |
+| **Web/terminal** | tmux, Playwright's Chromium, and ffmpeg **with `drawtext`** — Homebrew's plain `ffmpeg` is built without freetype, so use `brew install homebrew-ffmpeg/ffmpeg/ffmpeg` (a source build) and put it first on `PATH` |
+
+The phone path deliberately avoids `drawtext`: it draws its title cards with Pillow, so you
+don't need a source build of ffmpeg to make a phone demo.
+
+Check what you have:
 
 ```bash
-bash ~/.claude/skills/demo-video/scripts/doctor.sh
+bash ~/.claude/skills/demo-video/scripts/doctor.sh --simulator   # or --web, or neither for both
 ```
-
-### ElevenLabs key
-
-Skip this if you're narrating with Kokoro. To use ElevenLabs:
-
-1. On the [ElevenLabs Developers page](https://elevenlabs.io/app/developers), under API Keys,
-   create a key. Restrict it to Text to Speech and Voices (read), and set a credit quota if you
-   want a spending cap. `voices.py models` and `voices.py quota` need read access to models and
-   to your user details as well; nothing else depends on those two commands.
-2. Save it. Run this in your own terminal and paste the key at the prompt. It isn't shown or kept
-   in your shell history, and the file is readable only by you:
-
-   ```bash
-   mkdir -p ~/.config/demo-video && (umask 077; printf "ElevenLabs key: "; read -rs key; echo; printf "ELEVENLABS_API_KEY=%s\n" "$key" > ~/.config/demo-video/elevenlabs.env)
-   ```
-
-   Or set `ELEVENLABS_API_KEY` in your environment, which wins over the file.
-3. Check it. This is free, and prints River if the key works:
-
-   ```bash
-   uv run -q --no-project --with playwright python ~/.claude/skills/demo-video/scripts/voices.py list --search River
-   ```
-
-A key alone changes nothing: a demo uses ElevenLabs only when you name or save a voice.
 
 ## Smoke test
 
 ```bash
+# Phone: needs a booted simulator and nothing else. ~1 minute.
+bash ~/.claude/skills/demo-video/examples/phone-hello/run.sh
+
+# Web and terminal. ~3 minutes.
 bash ~/.claude/skills/demo-video/examples/hello/run.sh
 ```
 
-About three minutes. It records a terminal and a tiny web app, then writes
-`~/Movies/demo-video/hello/final/hello.mp4` (about 21 s), plus `-script.md`,
-`-picture.mp4` and `-preview.mp4`.
+The phone one drives the stock **Settings** app with `simctl` alone — no UI driver, no app
+to build, no network — and writes `exports/phone-hello/final/phone-hello.mp4`.
 
 ## What you get
 
@@ -81,28 +81,71 @@ About three minutes. It records a terminal and a tiny web app, then writes
 The human voice-over and iMovie finish are manual: see
 [voiceover-and-imovie.md](voiceover-and-imovie.md).
 
-## Voices and pacing
+## Writing a demo
 
-```bash
-python scripts/voices.py list --accent british     # every voice in your ElevenLabs account
-python scripts/voices.py set River --stability 0.4 # save a voice and its settings
-python scripts/fit.py <demo-folder> eleven:River   # how long does the picture outlast each line?
-python scripts/assemble.py <demo-folder> out.mp4 eleven:River --fit   # cut it down to the lines
+A demo is a folder with two files. `demo.py` is the configuration — the title, the device,
+the streams, and one narration line per shot:
+
+```python
+TITLE = "Adding your first task"   # "" skips the intro card
+BACKEND = "simulator"
+FORMAT = "portrait"                # the canvas takes the footage's shape: full bleed
+OUT = Path("../../exports/my-demo")
+DEVICE = "iPhone 17 Pro Max"
+BUNDLE_ID = "com.example.myapp"
+STREAMS = {"phone": {"title": "iPhone"}}
+SCENES = [{"take": "s1-intro", "lines": ["Open the app and pick a project.", ...]}]
 ```
 
-`SKILL.md` has the details. Voiced lines are cached in `~/.cache/demo-video/tts`, so only a
-changed line is billed again.
+`scenes.py` says what happens, and — this is the whole idea — which parts the viewer sees:
+
+```python
+with SimTake("s1-intro", DEMO) as t:
+    with t.clip("choosing a project", "phone"):   # kept
+        t.tap_text("Projects")
+        t.wait(1.2)
+    t.until("Synced", 60)                          # cut: off camera, costs the viewer nothing
+    with t.clip("the project is open", "phone"):   # kept
+        t.wait(2.5)
+```
+
+Copy `examples/phone-hello/` (or `examples/hello/` for the web) and edit. `SKILL.md` has the
+full method, including how to drive the app when you'd rather not install a UI driver.
+
+## Voices
+
+The narration engine is chosen by the *shape of the voice's name*: `af_heart` is Kokoro
+(local, free), `eleven:River` is ElevenLabs (bills characters, sends your script off the
+Mac), anything else is a macOS `say` voice. A key alone never turns ElevenLabs on — you have
+to name the voice.
+
+```bash
+python scripts/kokoro_catalog.py          # the local voices worth considering, graded
+python scripts/voice_lab.py --serve       # hear them all, English and Spanish, offline
+python scripts/fit_portrait.py <demo>     # does the picture outlast each line?
+```
+
+The voice lab exists because Kokoro's official demo space is English-only, so its Spanish
+voices can't be auditioned anywhere else. ElevenLabs setup is in
+[SKILL.md](SKILL.md#setting-up-elevenlabs); skip it entirely if you're using Kokoro.
+
+Voiced lines are cached in `~/.cache/demo-video/tts`, so only a changed line is voiced (or
+billed) again.
 
 ## Layout
 
 | Path | What |
 |---|---|
 | `SKILL.md` | The steps Claude follows |
-| `scripts/` | `recorder.py` (record takes), `cut.py` (lay out shots), `assemble.py` (narrate and join), `tts.py` + `kokoro_lines.py` + `elevenlabs.py` (the voice), `voices.py` (list and choose voices), `fit.py` + `retime.py` (fit the picture to the narration), `stage.sh` + `term_mirror.py` (a clean terminal to record), `human.py` (a drawn cursor), `doctor.sh` |
-| `examples/hello/` | The smoke test and the template to copy for your own demo |
+| `scripts/` — recording | `sim_recorder.py` + `sim_driver.py` (the simulator), `recorder.py` (Playwright), `stage.sh` + `term_mirror.py` (a clean terminal), `human.py` (a drawn cursor) |
+| `scripts/` — rendering | `assemble_portrait.py` (phone, full bleed), `cut.py` + `assemble.py` (the desktop compositor), `layout.py` (canvas presets), `titlecard.py` (Pillow title cards) |
+| `scripts/` — narration | `tts.py`, `kokoro_lines.py`, `elevenlabs.py`, `voices.py`, `kokoro_catalog.py`, `voice_lab.py` |
+| `scripts/` — timing | `fit_portrait.py`, `fit.py`, `retime.py` |
+| `examples/` | `phone-hello/` (simulator) and `hello/` (web) — smoke tests and templates |
+| `exports/` | Everything generated: takes, finals, the voice lab. Gitignored |
 | `troubleshooting.md` | Symptoms, causes and fixes |
-| `tests/` | `uv run -q --no-project --with playwright --with pytest pytest tests` |
+| `tests/` | `uv run -q --no-project --with playwright --with pillow --with pytest pytest tests` |
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE) and [ATTRIBUTION.md](ATTRIBUTION.md). Fork it and use it.
