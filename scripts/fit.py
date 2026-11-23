@@ -19,7 +19,7 @@ from types import ModuleType
 import retime
 from assemble import check, voice_scenes
 from cut import Shot, events_of, shots
-from recorder import load_demo
+from demos import load_demo
 from tts import choose, spoken
 
 FREEZE_FLAG = 0.3  # a held last frame shorter than this reads as a pause

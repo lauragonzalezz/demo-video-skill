@@ -17,7 +17,6 @@ Everything outside a clip is dropped by cut.py, so waits happen off camera.
 """
 from __future__ import annotations
 
-import importlib.util
 import json
 import re
 import shutil
@@ -31,6 +30,11 @@ from typing import Callable, Iterator
 
 from playwright.sync_api import BrowserContext, Page, sync_playwright
 from playwright.sync_api import Error as PlaywrightError
+
+# load_demo lives in demos.py so the simulator path can load a demo without Playwright.
+# Still importable from here: `from recorder import load_demo` is how the rest of the
+# pipeline and the tests have always reached it.
+from demos import load_demo  # noqa: F401
 
 # A 1280x720 layout recorded at 1.5x device scale: cut.py upscales to 1080p and text still
 # reads on a laptop. Playwright records at CSS-pixel size; the scale only sharpens it.
@@ -50,21 +54,6 @@ _KEEP_PAINTING = """() => {
 }"""
 CHROME_UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
              "(KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36")
-
-
-def load_demo(anchor: str | Path) -> ModuleType:
-    """Import the `demo.py` next to *anchor* (a scene file's __file__, or the demo folder)."""
-    path = Path(anchor).resolve()
-    path = path / "demo.py" if path.is_dir() else path.parent / "demo.py"
-    if str(path.parent) not in sys.path:  # demo.py may import its own helpers
-        sys.path.insert(0, str(path.parent))
-    spec = importlib.util.spec_from_file_location("demo", path)
-    if spec is None or spec.loader is None:
-        raise SystemExit(f"no demo.py at {path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    module.OUT = Path(module.OUT).expanduser()
-    return module
 
 
 def tmux(*args: str) -> str:

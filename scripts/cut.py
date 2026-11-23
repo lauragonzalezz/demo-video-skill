@@ -19,20 +19,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
 
-from recorder import load_demo
+from demos import load_demo
+from layout import BAR, FPS, FRONT, SLOTS, TITLE, LANDSCAPE
 
-W, H, FPS = 1920, 1080, 30
-BAR = 30  # menu bar height
-TITLE = 30  # window title bar height
+# The desktop compositor's canvas and geometry. They live in layout.py now, so a demo can
+# choose another canvas (see FORMAT); these are landscape's, unchanged.
+W, H = LANDSCAPE.width, LANDSCAPE.height
 FONT = "/System/Library/Fonts/Supplemental/Arial.ttf"
 FONT_B = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
 RENDER_BASE_S, RENDER_PER_S = 60, 20  # render timeout: base + per second of shot
 JUMP_TAG = 20.0  # seconds of cut wait that earn a tag ("+40 s", "+N min")
 TAG_S = 1.6  # how long the tag stays on screen
-# The front window, and the background slots in stream order (x, y, width): 16:9 content
-# plus a title bar. Four slots: a demo has at most four streams.
-FRONT = (176, 76, 1568)
-SLOTS = [(28, 44, 760), (1132, 44, 760), (28, 600, 760), (1132, 600, 760)]
 
 
 @dataclass(frozen=True)

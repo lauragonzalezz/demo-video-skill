@@ -23,7 +23,7 @@ from pathlib import Path
 from types import ModuleType
 
 from cut import FONT_B, FPS, _text, duration, events_of, shots, wallpaper
-from recorder import load_demo
+from demos import load_demo
 from retime import LEAD, MAX_SPEED, PAUSE, TAIL, Pacing, fit_shot, render_pieces
 from tts import choose, spoken, voice_lines
 
