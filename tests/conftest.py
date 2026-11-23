@@ -9,8 +9,12 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
+from pathlib import Path
 
 import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 STRICT = os.environ.get("DEMO_VIDEO_TESTS_STRICT") == "1"
 
@@ -57,7 +61,10 @@ def pillow() -> None:
 
 @pytest.fixture
 def drawtext() -> None:
-    """ffmpeg can draw text: every rendered shot needs it, and Homebrew's plain ffmpeg can't."""
-    filters = subprocess.run(["ffmpeg", "-hide_banner", "-filters"], capture_output=True,
-                             text=True).stdout if shutil.which("ffmpeg") else ""
-    need(" drawtext " in filters, "ffmpeg with drawtext (see doctor.sh)")
+    """ffmpeg can draw text: every rendered shot needs it, and Homebrew's plain ffmpeg can't.
+
+    Asks the same question the renderer does, through ffmpeg_path, so a machine with a
+    keg-only ffmpeg-full installed runs these tests instead of skipping them.
+    """
+    from ffmpeg_path import ensure_drawtext
+    need(ensure_drawtext(), "ffmpeg with drawtext (see doctor.sh)")

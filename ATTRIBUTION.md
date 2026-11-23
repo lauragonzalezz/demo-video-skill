@@ -26,8 +26,8 @@ Unchanged except where noted. These carry her copyright.
 | File | Change |
 |---|---|
 | `scripts/recorder.py` | `load_demo` moved to `scripts/demos.py`; re-exported, so `from recorder import load_demo` still works |
-| `scripts/cut.py` | Canvas and layout constants now come from `scripts/layout.py` (identical landscape values) |
-| `scripts/assemble.py` | Unchanged |
+| `scripts/cut.py` | Canvas and layout constants now come from `scripts/layout.py` (identical landscape values); `wallpaper` and `render` call `require_drawtext` first |
+| `scripts/assemble.py` | `title_card` calls `require_drawtext` first |
 | `scripts/fit.py` | Unchanged |
 | `scripts/retime.py` | Unchanged |
 | `scripts/human.py`, `scripts/cursor_path.py` | Unchanged |
@@ -35,7 +35,7 @@ Unchanged except where noted. These carry her copyright.
 | `scripts/tts.py`, `scripts/kokoro_lines.py`, `scripts/elevenlabs.py`, `scripts/voices.py` | Unchanged |
 | `scripts/doctor.sh` | Extended with simulator and Pillow checks; her checks kept |
 | `examples/hello/` | Still the web-path smoke test. One change: `OUT` (and `run.sh`'s final path) point at the repo's gitignored `exports/`, not `~/Movies`, so all generated media lands in one place |
-| `tests/test_*.py` | Her suite, unchanged |
+| `tests/test_*.py` | Her suite, unchanged. `conftest.py` gains a `pillow` fixture, and its `drawtext` fixture now asks `ffmpeg_path` rather than probing PATH directly |
 | `troubleshooting.md`, `voiceover-and-imovie.md` | Unchanged |
 | `SKILL.md` | Extended with the simulator backend; her web/terminal steps kept |
 
@@ -50,6 +50,7 @@ Unchanged except where noted. These carry her copyright.
 | `scripts/assemble_portrait.py` | Portrait, single-stream, full-bleed renderer (no desktop chrome) |
 | `scripts/fit_portrait.py` | The dead-air report for the portrait path |
 | `scripts/titlecard.py` | Pillow title cards, so the portrait path needs no ffmpeg `drawtext` |
+| `scripts/ffmpeg_path.py` | Finds the keg-only `ffmpeg-full` when the `ffmpeg` on PATH cannot draw text, so the desktop renderer needs no shell setup |
 | `scripts/kokoro_catalog.py` | A graded shortlist of Kokoro voices (`voices.py` only catalogs ElevenLabs) |
 | `scripts/voice_lab.py` | Local page to audition those voices, English and Spanish |
 | `examples/phone-hello/` | The simulator-path smoke test, against the stock iOS Settings app |

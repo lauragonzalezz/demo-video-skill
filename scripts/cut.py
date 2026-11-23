@@ -20,6 +20,7 @@ from pathlib import Path
 from types import ModuleType
 
 from demos import load_demo
+from ffmpeg_path import require_drawtext
 from layout import BAR, FPS, FRONT, SLOTS, TITLE, LANDSCAPE
 
 # The desktop compositor's canvas and geometry. They live in layout.py now, so a demo can
@@ -76,6 +77,7 @@ def _text(value: str) -> str:
 
 
 def wallpaper(demo: ModuleType, dst: Path) -> None:
+    require_drawtext()  # keg-only ffmpeg-full, when the ffmpeg on PATH cannot draw text
     subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i",
                     f"gradients=s={W}x{H}:c0=0x0f1a33:c1=0x2a1745:x0=0:y0=0:x1={W}:y1={H}:d=1",
                     "-frames:v", "1", "-vf",
@@ -108,6 +110,7 @@ def duration(path: Path) -> float:
 
 def render(demo: ModuleType, take: Path, shot: Shot, starts: dict[str, float], bg: Path,
            dst: Path) -> None:
+    require_drawtext()
     streams = [s for s in demo.STREAMS if s in starts]
     slot = {s: SLOTS[i] for i, s in enumerate(demo.STREAMS)}
     order = [s for s in streams if s != shot.focus] + [shot.focus]  # back to front

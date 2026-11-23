@@ -31,15 +31,27 @@ if [ $web = 1 ]; then
     [ -f "$f" ] || { echo "MISSING font $f"; fail=1; }
   done
   # Read the list first: `grep -q` closing the pipe early fails it under pipefail.
-  filters="$(ffmpeg -hide_banner -filters 2>/dev/null || true)"
-  if command -v ffmpeg >/dev/null && ! grep -q " drawtext " <<<"$filters"; then
-    # Homebrew's plain ffmpeg formula is built without freetype, so reinstalling it can't help.
-    # Only the desktop renderer needs drawtext; the portrait one draws its text with Pillow.
+  # Homebrew's plain ffmpeg formula is built without freetype, so reinstalling it can't help;
+  # ffmpeg-full is, but it is keg-only, so it is installed without being on PATH. The renderer
+  # finds it anyway (scripts/ffmpeg_path.py), so look in the same places before complaining.
+  # Only the desktop renderer needs drawtext; the portrait one draws its text with Pillow.
+  # Capture the list before grepping it: `grep -q` closes the pipe early, which under
+  # `pipefail` fails the whole command even when drawtext is there (her lesson, same trap).
+  drawtext_in() {
+    [ -x "${1:-}" ] || return 1
+    local listed
+    listed="$("$1" -hide_banner -filters 2>/dev/null || true)"
+    grep -q " drawtext " <<<"$listed"
+  }
+  if drawtext_in "$(command -v ffmpeg || true)"; then
+    :
+  elif drawtext_in /opt/homebrew/opt/ffmpeg-full/bin/ffmpeg || drawtext_in /usr/local/opt/ffmpeg-full/bin/ffmpeg; then
+    echo "ffmpeg: drawtext via the keg-only ffmpeg-full (the renderer finds it on its own)"
+  else
     echo "MISSING ffmpeg drawtext filter (the web path's title card and +N s tags) ->"
     echo "        brew install ffmpeg-full"
-    echo "        export PATH=\"\$(brew --prefix ffmpeg-full)/bin:\$PATH\""
-    echo "        (ffmpeg-full is bottled and keg-only: it installs beside your ffmpeg"
-    echo "         rather than replacing it, so only PATH decides which one runs.)"
+    echo "        (keg-only and bottled: it installs beside your ffmpeg instead of"
+    echo "         replacing it, and this skill puts it on PATH for itself.)"
     fail=1
   fi
   if command -v uv >/dev/null && ! uv run -q --no-project --with playwright python -c \

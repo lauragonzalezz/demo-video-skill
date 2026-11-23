@@ -23,6 +23,7 @@ from pathlib import Path
 from types import ModuleType
 
 from cut import FONT_B, FPS, _text, duration, events_of, shots, wallpaper
+from ffmpeg_path import require_drawtext
 from demos import load_demo
 from retime import LEAD, MAX_SPEED, PAUSE, TAIL, Pacing, fit_shot, render_pieces
 from tts import choose, spoken, voice_lines
@@ -53,6 +54,7 @@ def finish_shot(video: Path, line: Path | None, line_len: float, dst: Path) -> f
 
 
 def title_card(demo: ModuleType, bg: Path, dst: Path) -> None:
+    require_drawtext()
     s = TITLE_SECONDS
     subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-loop", "1", "-framerate", str(FPS),
                     "-t", f"{s}", "-i", str(bg), "-f", "lavfi", "-t", f"{s}",
