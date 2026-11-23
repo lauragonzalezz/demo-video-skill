@@ -11,7 +11,7 @@ A scene looks like the web one, with phone verbs instead of a cursor:
     from sim_recorder import SimTake
     from demos import load_demo
     demo = load_demo(__file__)
-    with SimTake("s1-intake", demo) as t:
+    with SimTake("s1-onboarding", demo) as t:
         with t.clip("choosing a project", "phone"):
             t.tap_text("Projects")
             t.wait(1.2)
