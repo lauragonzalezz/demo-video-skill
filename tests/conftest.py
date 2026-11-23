@@ -45,6 +45,17 @@ def ffmpeg() -> None:
 
 
 @pytest.fixture
+def pillow() -> None:
+    """Pillow draws the portrait title card (see scripts/titlecard.py)."""
+    try:
+        import PIL  # noqa: F401
+        ok = True
+    except ModuleNotFoundError:
+        ok = False
+    need(ok, "Pillow (run pytest with --with pillow)")
+
+
+@pytest.fixture
 def drawtext() -> None:
     """ffmpeg can draw text: every rendered shot needs it, and Homebrew's plain ffmpeg can't."""
     filters = subprocess.run(["ffmpeg", "-hide_banner", "-filters"], capture_output=True,
