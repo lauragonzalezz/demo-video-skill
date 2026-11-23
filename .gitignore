@@ -1,0 +1,10 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+.DS_Store
+
+# Everything generated, and any demo of your own you'd rather not publish.
+exports/
+
+# Local-only planning notes, not part of the skill.
+PLAN.md
