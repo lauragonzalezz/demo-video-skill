@@ -53,16 +53,25 @@ window open, because `simctl` records the framebuffer directly.
 
 ## 2. Script first
 
-Copy `examples/phone-hello/demo.py` and `scenes.py` (not `run.sh`) into a folder of your
-own. In `demo.py` set:
+Copy `examples/phone-hello/demo.py` and `scenes.py` (not `run.sh`, the smoke test's
+runner) into **`demos/<name>/`**:
+
+    cp -r examples/phone-hello demos/<name> && rm demos/<name>/run.sh
+
+**Put it in `demos/`, never in `examples/`.** `examples/` ships with the skill and is
+committed; `demos/` is gitignored, so a demo of someone's private or internal app never
+reaches the repository. It sits at the same depth as `examples/`, so the paths inside the
+copied files work with nothing to edit. In `demo.py` set:
 
 - `TITLE` — the intro card. **Set it to `""` to skip the card**; a short demo often reads
   better without one. `SUBTITLE` is optional.
 - `BACKEND = "simulator"`, and `FORMAT` (`portrait` is the default here: the canvas takes the
   footage's own shape, so the phone fills the frame. `reels` forces 9:16, `square` 1:1 —
   footage that doesn't match is padded, never stretched).
-- `OUT` — where takes land. A relative path resolves against the demo folder, so
-  `Path("../../exports/<name>")` keeps generated media in the repo's gitignored `exports/`.
+- `OUT` — where takes land: `Path("../../exports/<name>")`. A relative path resolves
+  against the demo folder, so the demo's **source** stays in `demos/` and its **output**
+  goes to `exports/`. Keeping them apart matters: `exports/` is the folder anyone may
+  delete to reclaim disk, and a scene script must never be lost that way.
 - `DEVICE` (a name like `"iPhone 17 Pro Max"`, a udid, or `None` for whichever is booted),
   `BUNDLE_ID` (launched off camera before the take), `DRIVER` (below).
 - `STREAMS` — exactly one entry for a simulator take, e.g. `{"phone": {"title": "iPhone"}}`.
@@ -180,7 +189,8 @@ Unchanged from Alaina's original. In short:
    title card and "+N s" tags need ffmpeg's `drawtext` filter, which Homebrew's plain ffmpeg
    lacks — `doctor.sh --web` says so and how to fix it. (The phone path draws its text with
    Pillow instead, so it does not need this.)
-2. **Script first.** Copy `examples/hello/demo.py` and `scenes.py`. Set `TITLE`, `OUT`,
+2. **Script first.** Copy `examples/hello/demo.py` and `scenes.py` into `demos/<name>/`
+   (never into `examples/`, which is committed; see the phone path's step 2). Set `TITLE`, `OUT`,
    `PROFILES` (a folder of its own: two demos sharing one collide), `TMUX`, `STREAMS` (at
    most 4; order sets the window slots) and `SCENES`. Same rules for writing lines as above.
 3. **Scenes.** One function per take. `with t.clip(label, focus):` holds only what the viewer

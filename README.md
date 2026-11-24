@@ -109,8 +109,15 @@ with SimTake("s1-intro", DEMO) as t:
         t.wait(2.5)
 ```
 
-Copy `examples/phone-hello/` (or `examples/hello/` for the web) and edit. `SKILL.md` has the
-full method, including how to drive the app when you'd rather not install a UI driver.
+Copy a template into `demos/<name>/` and edit:
+
+```bash
+cp -r examples/phone-hello demos/my-demo && rm demos/my-demo/run.sh
+```
+
+`demos/` is gitignored, so your own demos stay yours; `examples/` holds the two that ship
+with the skill. `SKILL.md` has the full method, including how to drive the app when you'd
+rather not install a UI driver.
 
 ## Voices
 
@@ -150,7 +157,8 @@ billed) again.
 | `scripts/` — narration | `tts.py`, `kokoro_lines.py`, `elevenlabs.py`, `voices.py`, `kokoro_catalog.py`, `voice_lab.py` |
 | `scripts/` — timing | `fit_portrait.py`, `fit.py`, `retime.py` |
 | `examples/` | `phone-hello/` (simulator) and `hello/` (web) — smoke tests and templates |
-| `exports/` | Everything generated: takes, finals, the voice lab. Gitignored |
+| `demos/` | Your own demos, one folder each. Gitignored |
+| `exports/` | Everything generated: takes, finals, the voice lab. Gitignored, and safe to delete |
 | `troubleshooting.md` | Symptoms, causes and fixes |
 | `tests/` | `uv run -q --no-project --with playwright --with pillow --with pytest pytest tests` |
 

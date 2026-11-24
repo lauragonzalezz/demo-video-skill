@@ -3,8 +3,14 @@ __pycache__/
 *.pyc
 .DS_Store
 
-# Everything generated, and any demo of your own you'd rather not publish.
+# Everything generated: takes, finals, the voice lab. Always safe to delete.
 exports/
+
+# Your own demos. Source, not output, so it is kept separate from exports/ -- clearing
+# exports/ to reclaim disk must never cost you a scene script. README.md is the only
+# part of this folder that ships.
+demos/*
+!demos/README.md
 
 # Local-only planning notes, not part of the skill.
 PLAN.md

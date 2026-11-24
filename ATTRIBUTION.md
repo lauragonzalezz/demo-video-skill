@@ -54,6 +54,7 @@ Unchanged except where noted. These carry her copyright.
 | `scripts/kokoro_catalog.py` | A graded shortlist of Kokoro voices (`voices.py` only catalogs ElevenLabs) |
 | `scripts/voice_lab.py` | Local page to audition those voices, English and Spanish |
 | `examples/phone-hello/` | The simulator-path smoke test, against the stock iOS Settings app |
+| `demos/README.md` | The convention for your own demos: gitignored source, kept apart from generated output |
 | `tests/test_sim_recorder.py`, `tests/test_portrait.py`, `tests/test_layout.py` | Tests for the above |
 
 Our additions are MIT too, so the whole repository stays MIT: fork it and use it.
