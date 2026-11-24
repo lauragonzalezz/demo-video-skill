@@ -19,6 +19,7 @@ scale factor is.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from typing import Protocol, runtime_checkable
@@ -123,11 +124,21 @@ class IdbDriver:
 
     @staticmethod
     def _centre(element: dict) -> tuple[float, float]:
-        frame = element.get("AXFrame") or element.get("frame") or {}
-        try:
-            return (frame["x"] + frame["width"] / 2, frame["y"] + frame["height"] / 2)
-        except KeyError as err:
-            raise RuntimeError(f"element has no usable frame: {element}") from err
+        # idb reports the frame twice: a `frame` dict and an `AXFrame` string like
+        # "{{21, 528}, {398, 42}}". Prefer the dict; fall back to parsing the string.
+        frame = element.get("frame")
+        if isinstance(frame, dict):
+            try:
+                return (frame["x"] + frame["width"] / 2, frame["y"] + frame["height"] / 2)
+            except KeyError as err:
+                raise RuntimeError(f"element has no usable frame: {element}") from err
+        ax = element.get("AXFrame")
+        if isinstance(ax, str):
+            nums = [float(n) for n in re.findall(r"-?\d+(?:\.\d+)?", ax)]
+            if len(nums) == 4:
+                x, y, w, h = nums
+                return (x + w / 2, y + h / 2)
+        raise RuntimeError(f"element has no usable frame: {element}")
 
     def tap(self, x: float, y: float) -> None:
         self._idb("ui", "tap", str(round(x)), str(round(y)))
